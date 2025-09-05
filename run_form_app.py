@@ -18,16 +18,16 @@ def main():
         sys.exit(1)
     
     print("🏥 Starting Patient Intake Form Application...")
-    print("📋 The form will be available at: http://localhost:8501")
+    print("📋 The form will be available at: http://localhost:8503")
     print("🔗 Patients can access their personalized forms via the link sent in their email")
     print("\n" + "="*60)
     
     try:
-        # Run streamlit on port 8501
+        # Run streamlit on port 8503
         subprocess.run([
             sys.executable, "-m", "streamlit", "run", 
             form_file,
-            "--server.port", "8501",
+            "--server.port", "8503",
             "--server.address", "localhost",
             "--browser.gatherUsageStats", "false"
         ], check=True)

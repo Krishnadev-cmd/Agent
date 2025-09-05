@@ -586,7 +586,7 @@ class FormDistributionSystem:
         subject = "📋 Patient Intake Forms - Complete Online Before Your Visit"
         
         # Generate Streamlit form URL with patient ID
-        streamlit_form_url = f"http://localhost:8501/patient_intake_form?patient_id={patient['patient_id']}"
+        streamlit_form_url = f"http://localhost:8503?patient_id={patient['patient_id']}"
         
         email_body = f"""
         <html>

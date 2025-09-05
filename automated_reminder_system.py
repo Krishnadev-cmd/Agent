@@ -396,10 +396,10 @@ class AutomatedReminderSystem:
             # Calculate reminder times - TESTING MODE: Immediate scheduling
             current_time = datetime.now()
             
-            # For testing: Schedule reminders just a few seconds apart
-            initial_reminder_time = current_time + timedelta(seconds=10)     # 10 seconds from now
-            followup_1_reminder_time = current_time + timedelta(seconds=30)  # 30 seconds from now  
-            followup_2_reminder_time = current_time + timedelta(seconds=60)  # 60 seconds from now
+            # For testing: Schedule reminders just a few seconds apart (SUPER FAST)
+            initial_reminder_time = current_time + timedelta(seconds=5)      # 5 seconds from now
+            followup_1_reminder_time = current_time + timedelta(seconds=15)  # 15 seconds from now  
+            followup_2_reminder_time = current_time + timedelta(seconds=25)  # 25 seconds from now
             
             self.log_debug(f"TEST MODE: Scheduling reminders at:")
             self.log_debug(f"  - Initial: {initial_reminder_time} (10 seconds - regular reminder)")

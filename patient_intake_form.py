@@ -92,7 +92,7 @@ def save_intake_form(form_data):
             family_history, smoking_status, alcohol_use, exercise_habits,
             consent1, consent2, consent3, consent4, digital_signature, signature_date,
             appointment_date, appointment_time, doctor_name, specialty, duration
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         form_id,
         form_data.get('patient_id'),
@@ -192,8 +192,8 @@ def main():
     st.markdown('<div class="main-header"><h1>🏥 Patient Intake Form</h1><h3>MediCare Allergy & Wellness Center</h3></div>', unsafe_allow_html=True)
     
     # Get patient ID from URL parameters
-    query_params = st.experimental_get_query_params()
-    patient_id = query_params.get('patient_id', [None])[0]
+    query_params = st.query_params
+    patient_id = query_params.get('patient_id', None)
     
     if not patient_id:
         st.error("❌ Patient ID not found in URL. Please use the link provided in your appointment confirmation.")
@@ -231,7 +231,19 @@ def main():
         col1, col2 = st.columns(2)
         with col1:
             first_name = st.text_input("First Name *", value=patient_info['first_name'], key="first_name")
-            date_of_birth = st.date_input("Date of Birth *", value=datetime.strptime(patient_info['date_of_birth'], '%Y-%m-%d').date() if patient_info['date_of_birth'] else None)
+            # Handle different date formats
+            dob_value = None
+            if patient_info.get('date_of_birth'):
+                try:
+                    # Try different date formats
+                    dob_str = patient_info['date_of_birth']
+                    if '/' in dob_str:
+                        dob_value = datetime.strptime(dob_str, '%m/%d/%Y').date()
+                    elif '-' in dob_str:
+                        dob_value = datetime.strptime(dob_str, '%Y-%m-%d').date()
+                except ValueError:
+                    dob_value = None
+            date_of_birth = st.date_input("Date of Birth *", value=dob_value)
             phone = st.text_input("Phone Number *", value=patient_info['phone'], key="phone")
         
         with col2:
