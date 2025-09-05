@@ -1,0 +1,51 @@
+patient_id,first_name,last_name,date_of_birth,gender,phone,email,address,city,state,zip_code,insurance_company,member_id,group_number,is_new_patient,allergies,emergency_contact_name,emergency_contact_phone,emergency_contact_relationship
+fb9e265c,Jane,Brown,04/26/1979,Other,(243) 634-9779,timothy.gonzalez@outlook.com,8050 Oak St,Madison,TX,72434,Cigna,939915180,21604,True,Pet dander,George Torres,(412) 263-8518,Friend
+4d885dc9,Lisa,Hernandez,06/18/1953,Other,(977) 809-2332,deborah.white@yahoo.com,209 Elm Dr,Franklin,NY,62136,Blue Cross Blue Shield,537622998,45835,True,Shellfish,Laura Allen,(808) 298-7372,Sibling
+c0445c60,Dorothy,Gonzalez,11/13/1949,Other,(885) 550-3328,charles.moore@yahoo.com,6260 Main Ln,Georgetown,NY,70620,Kaiser Permanente,255491601,81255,False,None,Jane Nelson,(265) 221-9491,Child
+0dad2b35,Steven,Lee,01/09/1948,Male,(313) 269-2938,joshua.gonzalez@yahoo.com,7404 Oak Ave,Georgetown,CA,52206,Medicaid,670247537,46025,True,Peanuts,Christopher Young,(674) 989-9571,Child
+484395e6,Barbara,Nguyen,01/28/1998,Male,(251) 415-2765,linda.campbell@gmail.com,741 Oak St,Georgetown,CA,84290,Aetna,109965392,81245,False,Pet dander,Anthony Sanchez,(215) 426-2307,Sibling
+304803d6,Charles,Wright,01/23/2002,Other,(643) 548-1083,maria.scott@outlook.com,6938 Cedar Ln,Franklin,FL,54787,Humana,667439177,39080,True,Pet dander,Lisa Hall,(431) 294-9418,Friend
+20257786,Michael,Ramirez,05/24/1975,Other,(538) 988-6547,jessica.johnson@yahoo.com,6244 Cedar Dr,Madison,TX,41681,Anthem,407817484,59046,True,Shellfish,Linda Jackson,(925) 705-2339,Child
+59740676,Laura,Hill,07/03/1998,Male,(615) 525-6341,andrew.rivera@outlook.com,350 Oak Ln,Springfield,IL,90739,Anthem,927375381,73482,True,Pet dander,Laura Thomas,(805) 626-3424,Child
+8defbe79,Barbara,Allen,08/26/1995,Male,(347) 585-4807,jason.johnson@outlook.com,5459 Cedar Ln,Riverside,TX,69420,Anthem,592184702,76023,True,Peanuts,John Adams,(477) 299-6980,Child
+571780ec,Deborah,Davis,07/22/2003,Other,(988) 405-3335,barbara.moore@outlook.com,5647 Cedar Ave,Franklin,FL,15674,Kaiser Permanente,501743028,52912,True,None,Barbara Rivera,(416) 434-2549,Spouse
+35f5b23a,Brian,Williams,02/10/1995,Other,(879) 986-8037,laura.wilson@outlook.com,4036 Cedar Ave,Riverside,NY,12960,Blue Cross Blue Shield,179483850,15367,True,None,William Roberts,(680) 251-4047,Sibling
+784bcb92,Mark,White,09/18/1984,Female,(930) 305-9587,jessica.allen@yahoo.com,6973 Elm St,Madison,TX,98383,UnitedHealthcare,726163458,17712,True,None,Kimberly Thompson,(752) 825-6633,Sibling
+c0591c23,Donna,Moore,11/12/1959,Female,(744) 500-5431,george.smith@yahoo.com,6719 Pine St,Franklin,FL,62945,Medicaid,606026250,32853,False,Dust mites,Dorothy Mitchell,(294) 303-6197,Child
+99df725b,Jessica,Hill,03/05/1994,Other,(285) 283-6724,deborah.davis@gmail.com,6407 Main Ln,Springfield,FL,19229,Cigna,738507801,57979,True,Peanuts,Daniel Garcia,(825) 790-7655,Friend
+3c1b0cfd,Laura,Green,01/08/2007,Female,(785) 852-2446,patricia.garcia@gmail.com,6229 Elm St,Riverside,TX,23162,Humana,584473448,76952,True,Dust mites,Jason Garcia,(940) 923-6401,Sibling
+fd02a508,Paul,Smith,03/30/1999,Female,(579) 925-1681,ruth.flores@gmail.com,2566 Elm St,Springfield,CA,33465,Medicare,935238573,35067,True,Dust mites,Jessica Wilson,(913) 416-3637,Sibling
+f02e7255,Robert,White,04/24/1996,Female,(713) 483-4175,jennifer.harris@outlook.com,8058 Oak Dr,Franklin,CA,76002,Medicaid,214296868,80095,False,Pollen,Kenneth Brown,(293) 750-3969,Friend
+75f9c68f,Andrew,Moore,04/17/1948,Other,(927) 863-1749,sharon.carter@yahoo.com,6082 Pine Ave,Georgetown,IL,90114,Anthem,556291715,60996,True,Peanuts,Kenneth Flores,(668) 655-2966,Friend
+4a743d28,Matthew,Miller,12/22/1983,Female,(297) 964-3575,daniel.lee@yahoo.com,2344 Oak Ln,Riverside,NY,14497,UnitedHealthcare,304914660,51104,False,Pet dander,John Flores,(542) 501-5861,Child
+bc193256,Anthony,Davis,07/09/1947,Other,(684) 724-2300,carol.carter@outlook.com,4342 Pine Ln,Madison,TX,85685,Medicare,374150130,34458,True,Pollen,Maria King,(503) 275-5759,Spouse
+6cade34e,Kevin,King,09/26/1957,Female,(600) 297-8799,michael.nelson@outlook.com,5219 Pine St,Franklin,FL,59487,UnitedHealthcare,350697205,77453,True,Peanuts,Christopher Clark,(253) 336-9146,Sibling
+5487ec3c,Carol,Hernandez,10/12/1964,Male,(557) 704-1398,lisa.campbell@outlook.com,1191 Oak Ln,Riverside,FL,75024,Anthem,500833649,60736,False,Pet dander,Linda Mitchell,(271) 366-9329,Friend
+0284e374,Linda,Smith,07/29/1984,Other,(378) 892-4733,michael.lewis@gmail.com,9269 Oak Dr,Madison,CA,57722,Medicaid,524466714,50190,False,Pollen,Sandra Wilson,(769) 968-4131,Child
+5e65c41e,Donna,Taylor,05/21/2002,Male,(275) 727-4480,donna.walker@yahoo.com,4816 Elm St,Madison,NY,27015,Medicaid,884517265,81041,False,Shellfish,Michelle Lewis,(456) 667-9444,Parent
+19751002,Andrew,Baker,08/05/1970,Male,(312) 417-6826,michael.moore@yahoo.com,8814 Cedar Ave,Georgetown,FL,54121,Cigna,168406426,39013,False,Dust mites,Barbara Johnson,(319) 210-5124,Spouse
+6391a226,Linda,Carter,11/26/1954,Male,(353) 891-2257,joshua.davis@yahoo.com,6197 Pine Dr,Springfield,FL,69434,Medicaid,235562700,91279,True,Pet dander,Matthew Jackson,(557) 571-8640,Sibling
+4e74425b,Sarah,Roberts,09/04/2001,Male,(439) 489-7667,lisa.torres@yahoo.com,8080 Elm St,Franklin,NY,92977,Anthem,918844170,25280,False,Peanuts,Jennifer Sanchez,(874) 342-5476,Spouse
+c8cf9dfa,Donald,Hernandez,06/16/1980,Male,(396) 355-8718,daniel.carter@outlook.com,3169 Pine Dr,Franklin,IL,54044,Medicaid,775413899,92497,True,Peanuts,Donald Brown,(727) 714-7022,Parent
+eafc1d57,Timothy,Green,06/18/1986,Other,(913) 200-1019,christopher.nguyen@yahoo.com,3201 Cedar Dr,Franklin,CA,39117,UnitedHealthcare,222760866,47344,True,Shellfish,Laura Thompson,(344) 611-6921,Parent
+278d43be,Deborah,Martin,09/20/1999,Female,(996) 378-5798,carol.roberts@outlook.com,1111 Elm Dr,Riverside,FL,80542,Humana,745548051,78822,True,Shellfish,Paul Anderson,(435) 570-7996,Parent
+382e5c82,Laura,Jones,09/02/1980,Male,(430) 931-5060,sharon.campbell@gmail.com,9250 Pine St,Madison,TX,46925,Anthem,264710950,69372,True,Pet dander,Kevin Hall,(864) 411-3354,Friend
+68725251,Linda,Martinez,09/06/1950,Female,(967) 763-3764,patricia.adams@gmail.com,4638 Elm St,Franklin,CA,12644,Medicare,194451436,23453,True,Peanuts,Donald Miller,(585) 806-3329,Friend
+39420730,James,Martinez,09/21/1954,Other,(437) 821-7975,joshua.campbell@gmail.com,7313 Oak Ave,Georgetown,FL,69408,UnitedHealthcare,341963366,42159,True,Dust mites,Maria Nguyen,(347) 689-8925,Sibling
+78c47303,Brian,Hall,07/13/1950,Female,(461) 948-3958,ruth.thompson@gmail.com,8093 Main Ave,Springfield,NY,98851,Medicare,764314909,18588,True,Shellfish,Robert Davis,(989) 314-6806,Sibling
+67d674ef,Jane,Rivera,04/16/1947,Female,(234) 927-2782,donald.jones@gmail.com,1179 Elm Dr,Madison,NY,46079,Aetna,126391165,62106,False,Pollen,Sarah Wright,(659) 215-7844,Sibling
+b77ef29c,Carol,White,11/14/1947,Female,(982) 267-6938,sandra.perez@outlook.com,3363 Cedar Dr,Franklin,FL,36036,Kaiser Permanente,847661605,91929,False,None,Carol Mitchell,(217) 509-5184,Spouse
+d37c3267,Margaret,Baker,10/10/1990,Female,(558) 822-1353,brian.carter@yahoo.com,8628 Cedar Ln,Franklin,NY,90762,Cigna,592671567,93524,True,Peanuts,Kimberly Gonzalez,(474) 370-5354,Spouse
+84f1cac8,George,Hill,06/08/1966,Female,(847) 436-8995,steven.white@yahoo.com,4412 Cedar St,Springfield,NY,50940,UnitedHealthcare,387399378,24466,False,Pollen,Andrew Sanchez,(667) 460-5251,Spouse
+26411562,Charles,Nguyen,10/30/1956,Male,(888) 672-2634,george.lewis@gmail.com,5004 Elm St,Springfield,FL,78552,Cigna,858232548,74474,False,Peanuts,Sarah Hernandez,(438) 771-9695,Spouse
+39a22bd5,Ronald,Thomas,10/04/1977,Other,(538) 748-5698,margaret.wright@gmail.com,591 Oak St,Franklin,TX,36604,Anthem,344603837,18468,False,None,Daniel Wright,(219) 236-3936,Parent
+eadfa0f5,Laura,Mitchell,05/02/1989,Other,(201) 517-4975,robert.gonzalez@gmail.com,335 Cedar Dr,Riverside,NY,25658,Cigna,322213355,63145,False,None,Kevin Jones,(638) 295-2620,Spouse
+5129bbd7,Donna,White,08/02/1961,Other,(779) 920-9056,jennifer.thompson@outlook.com,4436 Oak Dr,Springfield,FL,54527,Medicare,879188181,86774,True,Pollen,Laura Clark,(399) 590-4353,Parent
+929e5cc4,Michelle,Green,02/22/1997,Female,(661) 843-4324,donna.adams@outlook.com,3588 Elm Ave,Madison,CA,76678,Humana,338509843,44920,False,Pollen,Emma White,(417) 843-9291,Child
+21fb6da5,Christopher,Nelson,02/24/1957,Male,(512) 401-5410,christopher.sanchez@yahoo.com,3603 Pine Ave,Madison,IL,60959,Medicaid,243539691,83868,True,Pollen,John Perez,(651) 687-1117,Sibling
+8d012680,Sharon,King,02/26/1991,Female,(677) 859-4145,ronald.thompson@yahoo.com,3422 Elm Dr,Georgetown,TX,41339,Anthem,922954158,58094,False,Pet dander,Kimberly Robinson,(769) 995-9637,Child
+60170c05,Kenneth,Hall,06/30/1957,Male,(641) 289-1165,david.harris@yahoo.com,3224 Main Ln,Madison,NY,24907,Cigna,202788701,38040,False,Dust mites,Ronald Robinson,(230) 858-4234,Parent
+099ea34a,Steven,Moore,04/29/1946,Other,(963) 704-7799,andrew.rivera@outlook.com,2092 Cedar Ave,Riverside,CA,67757,Medicaid,599479264,68818,False,Dust mites,Brian Flores,(497) 616-5550,Friend
+53c0772a,Patricia,Lee,07/30/1973,Male,(981) 794-3431,kenneth.jackson@outlook.com,8481 Elm St,Georgetown,IL,87296,Kaiser Permanente,145505586,60366,True,Pollen,Deborah Gonzalez,(586) 966-1295,Spouse
+a9cea272,Robert,Flores,06/28/1958,Female,(793) 907-6622,kevin.allen@outlook.com,6624 Elm St,Riverside,NY,83232,Medicaid,997108488,31123,True,None,Laura White,(911) 613-3651,Child
+ed8ed8d3,Ronald,Lopez,04/01/1974,Female,(558) 798-7817,john.wilson@outlook.com,1279 Elm Dr,Riverside,FL,63531,UnitedHealthcare,812955415,97446,True,Peanuts,Sarah Roberts,(978) 639-9408,Child
