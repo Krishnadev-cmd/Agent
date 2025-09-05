@@ -578,7 +578,75 @@ How would you like to search?"""
                 
         except Exception as e:
             print(f"Error in conversation processing: {e}")
-            return "I apologize, but I encountered an error. Let me start over. How can I help you schedule an appointment today?"
+            # Enhanced error handling with Gemini AI
+            try:
+                error_response = self.generate_ai_response(
+                    f"The user said '{user_input}' but there was a system error. Provide a helpful response that acknowledges the issue and offers to restart or get help.",
+                    {'step': 'error_recovery'}
+                )
+                return f"{error_response}\n\nWould you like to start over? Just say 'restart' or tell me how I can help you."
+            except:
+                return "I apologize, but I encountered an error. Let me start over. How can I help you schedule an appointment today?"
+    
+    def handle_specialty_request(self, specialty_request: str) -> str:
+        """Handle requests for specific medical specialties using AI"""
+        try:
+            # Get all doctors
+            all_doctors = self.get_available_doctors()
+            
+            # Use Gemini AI to match specialty requests to available specialties
+            available_specialties = list(all_doctors['specialty'].unique())
+            
+            ai_prompt = f"""
+            User is looking for: "{specialty_request}"
+            
+            Available medical specialties:
+            {chr(10).join([f"- {spec}" for spec in available_specialties])}
+            
+            Which specialty best matches their request? Respond with the exact specialty name from the list, or "none" if no good match.
+            """
+            
+            ai_response = self.generate_ai_response(ai_prompt, {'step': 'specialty_matching'})
+            
+            # Find matching specialty
+            matched_specialty = None
+            for specialty in available_specialties:
+                if specialty.lower() in ai_response.lower():
+                    matched_specialty = specialty
+                    break
+            
+            if matched_specialty:
+                # Show doctors for that specialty
+                specialty_doctors = all_doctors[all_doctors['specialty'] == matched_specialty]
+                
+                response = f"**🩺 {matched_specialty} Specialists:**\n\n"
+                
+                for i, (_, doctor) in enumerate(specialty_doctors.iterrows(), 1):
+                    # Get available slots
+                    try:
+                        slots = self.get_available_slots(doctor['doctor_id'])
+                        slot_count = len(slots)
+                    except:
+                        slot_count = "Unknown"
+                    
+                    response += f"**{i}. Dr. {doctor['doctor_name']}**\n"
+                    response += f"   📅 Available Slots: {slot_count}\n\n"
+                
+                response += f"We have {len(specialty_doctors)} doctors in {matched_specialty}. "
+                response += "To schedule with any of these doctors, please type their number or name."
+                
+                return response
+            else:
+                return f"""I couldn't find an exact match for "{specialty_request}" in our available specialties.
+
+**Our Available Specialties:**
+{chr(10).join([f"• {spec}" for spec in sorted(available_specialties)])}
+
+Could you please specify which specialty you're looking for, or describe your symptoms so I can recommend the best doctor?"""
+                
+        except Exception as e:
+            print(f"Error handling specialty request: {e}")
+            return "I encountered an error processing your specialty request. Could you please tell me which type of doctor you're looking for?"
     
     def _handle_greeting(self, user_input: str) -> str:
         """Handle initial greeting and move to name collection"""
@@ -965,7 +1033,7 @@ Your patient information has been saved securely. Now let me recommend the best 
             return "I encountered an error saving your information. Please try again or contact our office directly."
     
     def _show_doctor_recommendations(self) -> str:
-        """Show recommended doctors based on symptoms"""
+        """Show recommended doctors based on symptoms with Gemini AI enhancement"""
         patient_info = self.conversation_context['patient_info']
         symptoms = patient_info.get('symptoms', '')
         medical_history = patient_info.get('medical_history', '')
@@ -975,30 +1043,69 @@ Your patient information has been saved securely. Now let me recommend the best 
         if not recommendations:
             return "I apologize, but I couldn't find available doctors at the moment. Please contact our office directly."
         
+        # Use Gemini AI to provide intelligent recommendations
+        try:
+            ai_context = f"""
+            Patient symptoms: {symptoms}
+            Medical history: {medical_history}
+            Available doctors: {len(recommendations)} total doctors
+            """
+            
+            ai_recommendation = self.generate_ai_response(
+                f"Based on the patient's symptoms '{symptoms}' and medical history '{medical_history}', provide a brief, professional explanation of why certain medical specialties would be most appropriate.",
+                {'step': 'doctor_recommendation', 'ai_context': ai_context}
+            )
+        except Exception as e:
+            print(f"AI recommendation failed: {e}")
+            ai_recommendation = ""
+        
+        # Show more doctors (increased from 3 to 8) with better organization
         response = "**🩺 Recommended Specialists:**\n\n"
         
-        for i, doctor in enumerate(recommendations[:3], 1):  # Show top 3
-            available_slots = len(doctor['available_slots'])
-            match_indicator = "⭐ BEST MATCH" if doctor['score'] > 0 else "Available"
-            
-            response += f"""**{i}. Dr. {doctor['name']}** ({match_indicator})
-   🏥 Specialty: {doctor['specialty']}
-   📅 Available Slots: {available_slots} upcoming appointments
-   
+        if ai_recommendation and len(ai_recommendation) < 200:
+            response += f"*{ai_recommendation}*\n\n"
+        
+        # Group doctors by specialty for better display
+        specialty_groups = {}
+        for doctor in recommendations[:12]:  # Show top 12 doctors
+            specialty = doctor['specialty']
+            if specialty not in specialty_groups:
+                specialty_groups[specialty] = []
+            specialty_groups[specialty].append(doctor)
+        
+        doctor_number = 1
+        for specialty, doctors in list(specialty_groups.items())[:6]:  # Show up to 6 specialties
+            response += f"**🏥 {specialty}:**\n"
+            for doctor in doctors[:3]:  # Max 3 doctors per specialty
+                available_slots = len(doctor['available_slots'])
+                match_indicator = "⭐ BEST MATCH" if doctor['score'] > 0 else "Available"
+                
+                response += f"""   **{doctor_number}. Dr. {doctor['name']}** ({match_indicator})
+      📅 Available Slots: {available_slots} upcoming appointments
 """
+                doctor_number += 1
+            response += "\n"
+        
+        total_shown = min(doctor_number - 1, len(recommendations))
+        response += f"**Showing {total_shown} of {len(recommendations)} available doctors**\n\n"
         
         response += """To see available time slots for any doctor, please type:
-- The doctor's number (1, 2, or 3)
+- The doctor's number (1, 2, 3, etc.)
 - Or the doctor's name
 - Or "show slots for Dr. [Name]"
+- Or "show all doctors" to see complete list
 
 Which doctor would you prefer?"""
         
         return response
     
     def _handle_doctor_selection(self, user_input: str) -> str:
-        """Handle doctor selection and show available slots"""
+        """Handle doctor selection and show available slots with Gemini AI enhancement"""
         user_lower = user_input.lower()
+        
+        # Handle "show all doctors" request
+        if "show all" in user_lower or "all doctors" in user_lower:
+            return self._show_all_doctors()
         
         # Get doctor recommendations again
         patient_info = self.conversation_context['patient_info']
@@ -1008,19 +1115,42 @@ Which doctor would you prefer?"""
         
         selected_doctor = None
         
-        # Try to match by number
-        if '1' in user_input and len(recommendations) >= 1:
-            selected_doctor = recommendations[0]
-        elif '2' in user_input and len(recommendations) >= 2:
-            selected_doctor = recommendations[1]
-        elif '3' in user_input and len(recommendations) >= 3:
-            selected_doctor = recommendations[2]
-        else:
-            # Try to match by name
+        # Try to match by number (now supporting up to 20 doctors)
+        for i in range(1, min(21, len(recommendations) + 1)):
+            if str(i) in user_input and len(recommendations) >= i:
+                selected_doctor = recommendations[i-1]
+                break
+        
+        # If no number match, try to match by name or use Gemini AI
+        if not selected_doctor:
+            # Try exact name matching first
             for doctor in recommendations:
                 if doctor['name'].lower() in user_lower:
                     selected_doctor = doctor
                     break
+            
+            # If still no match, use Gemini AI for intelligent parsing
+            if not selected_doctor:
+                try:
+                    ai_prompt = f"""
+                    The user said: "{user_input}"
+                    
+                    Available doctors:
+                    {[f"{i+1}. Dr. {doc['name']} ({doc['specialty']})" for i, doc in enumerate(recommendations[:10])]}
+                    
+                    Which doctor is the user trying to select? Respond with just the number (1-{min(10, len(recommendations))}) or "none" if unclear.
+                    """
+                    
+                    ai_response = self.generate_ai_response(ai_prompt, {'step': 'doctor_parsing'})
+                    
+                    # Extract number from AI response
+                    for i in range(1, min(11, len(recommendations) + 1)):
+                        if str(i) in ai_response:
+                            selected_doctor = recommendations[i-1]
+                            break
+                            
+                except Exception as e:
+                    print(f"AI doctor selection failed: {e}")
         
         if selected_doctor:
             self.conversation_context['selected_doctor'] = selected_doctor
@@ -1060,7 +1190,62 @@ Which time works best for you?"""
             
             return response
         else:
-            return "I didn't understand which doctor you'd prefer. Please type 1, 2, 3, or the doctor's name:"
+            # Use Gemini AI to provide helpful suggestions
+            try:
+                ai_suggestion = self.generate_ai_response(
+                    f"The user said '{user_input}' when trying to select a doctor. Provide a helpful, brief response guiding them to make a clear selection.",
+                    {'step': 'doctor_selection_help'}
+                )
+                return f"{ai_suggestion}\n\nPlease type a doctor number (1, 2, 3, etc.) or doctor's name, or say 'show all doctors' to see the complete list."
+            except:
+                return "I didn't understand which doctor you'd prefer. Please type a doctor number (1, 2, 3, etc.), the doctor's name, or 'show all doctors' to see the complete list."
+    
+    def _show_all_doctors(self) -> str:
+        """Show all available doctors organized by specialty"""
+        try:
+            all_doctors = self.get_available_doctors()
+            
+            if len(all_doctors) == 0:
+                return "I apologize, but no doctors are currently available. Please contact our office directly."
+            
+            # Group doctors by specialty
+            specialty_groups = {}
+            for _, doctor in all_doctors.iterrows():
+                specialty = doctor['specialty']
+                if specialty not in specialty_groups:
+                    specialty_groups[specialty] = []
+                specialty_groups[specialty].append(doctor)
+            
+            response = f"**🏥 All Available Doctors ({len(all_doctors)} total):**\n\n"
+            
+            doctor_number = 1
+            for specialty, doctors in specialty_groups.items():
+                response += f"**🩺 {specialty} ({len(doctors)} doctors):**\n"
+                for doctor in doctors:
+                    # Get available slots count
+                    try:
+                        slots = self.get_available_slots(doctor['doctor_id'])
+                        available_slots = len(slots)
+                    except:
+                        available_slots = "Unknown"
+                    
+                    response += f"   **{doctor_number}. Dr. {doctor['doctor_name']}**\n"
+                    response += f"      📅 Available Slots: {available_slots}\n"
+                    doctor_number += 1
+                response += "\n"
+            
+            response += """To select a doctor, please type:
+- The doctor's number (1, 2, 3, etc.)
+- Or the doctor's name (e.g., "Dr. Smith")
+- Or ask for recommendations: "recommend doctor for [your symptoms]"
+
+Which doctor would you prefer?"""
+            
+            return response
+            
+        except Exception as e:
+            print(f"Error showing all doctors: {e}")
+            return "I encountered an error retrieving the doctor list. Please try again or contact our office directly."
     
     def _handle_slot_selection(self, user_input: str) -> str:
         """Handle appointment slot selection and booking"""
@@ -1218,8 +1403,90 @@ Is there anything else I can help you with today?"""
             return "I encountered an error while booking your appointment. Please try again or contact our office directly."
     
     def _handle_general_query(self, user_input: str) -> str:
-        """Handle general queries using AI"""
-        return self.generate_ai_response(user_input, self.conversation_context)
+        """Handle general queries using enhanced Gemini AI with edge case handling"""
+        try:
+            # Enhanced context for better AI responses
+            current_step = self.conversation_context.get('step', 'greeting')
+            patient_info = self.conversation_context.get('patient_info', {})
+            
+            # Special edge case handling
+            user_lower = user_input.lower()
+            
+            # Handle doctor-related queries
+            if any(word in user_lower for word in ['doctor', 'physician', 'specialist', 'dr.']):
+                if any(word in user_lower for word in ['all', 'list', 'show', 'available']):
+                    return self._show_all_doctors()
+                elif any(word in user_lower for word in ['recommend', 'suggest', 'best']):
+                    if 'symptoms' in patient_info:
+                        return self._show_doctor_recommendations()
+                    else:
+                        return "I'd be happy to recommend doctors! First, could you tell me about your symptoms or health concerns?"
+            
+            # Handle appointment-related queries
+            if any(word in user_lower for word in ['appointment', 'schedule', 'book', 'time', 'slot']):
+                if current_step == 'greeting':
+                    return "I'd be happy to help you schedule an appointment! Let's start with your full name."
+                elif 'selected_doctor' in self.conversation_context:
+                    return "You've selected a doctor. Please choose from the available time slots I showed you earlier."
+                elif 'patient_info' in self.conversation_context and self.conversation_context['patient_info']:
+                    return self._show_doctor_recommendations()
+            
+            # Handle form-related queries
+            if any(word in user_lower for word in ['form', 'intake', 'paperwork', 'fill']):
+                return """Our patient intake forms will be automatically emailed to you after your appointment is confirmed. 
+The forms include:
+- Medical history questionnaire
+- Current medications list
+- Insurance information verification
+- Symptom assessment
+
+You can also access forms online at: http://localhost:8503"""
+            
+            # Use enhanced AI prompt with context
+            enhanced_prompt = f"""
+            You are a medical appointment scheduling assistant at MediCare Allergy & Wellness Center.
+            
+            Current conversation step: {current_step}
+            Patient information collected: {json.dumps(patient_info, indent=2) if patient_info else 'None'}
+            
+            Context:
+            - We have 28+ doctors across 11 specialties
+            - New patients get 60-minute appointments, returning patients get 30-minute
+            - We offer automated reminders and online intake forms
+            - Our system can handle complex scheduling requests
+            
+            User input: "{user_input}"
+            
+            Provide a helpful, professional response that:
+            1. Addresses their query directly
+            2. Guides them toward scheduling if appropriate
+            3. Mentions relevant services
+            4. Keeps response under 150 words
+            5. Maintains a friendly, medical office tone
+            
+            If they're asking about something unclear, ask clarifying questions.
+            If they seem frustrated, acknowledge their concern and offer assistance.
+            """
+            
+            response = self.generate_ai_response(enhanced_prompt, self.conversation_context)
+            
+            # Add helpful suggestions for common edge cases
+            if any(word in user_lower for word in ['help', 'confused', 'don\'t understand', 'stuck']):
+                response += "\n\n**Quick Options:**\n- Say 'schedule appointment' to start booking\n- Say 'show all doctors' to see our full roster\n- Say 'help with forms' for intake information"
+            
+            return response
+            
+        except Exception as e:
+            print(f"Error in general query handling: {e}")
+            return """I apologize for the confusion. Let me help you get back on track:
+
+**Available Options:**
+- **Schedule an appointment**: Just say "I need an appointment"
+- **See all doctors**: Say "show all doctors" 
+- **Get help**: Say "I need help"
+- **Start over**: Say "restart" or "begin again"
+
+What would you like to do?"""
     
     def _handle_test_reminder_request(self, user_input: str) -> str:
         """Handle test reminder requests"""
