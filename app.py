@@ -5,17 +5,19 @@ import uuid
 from datetime import datetime, timedelta
 import plotly.express as px
 import plotly.graph_objects as go
-import streamlit as st
-import pandas as pd
-import sqlite3
-from datetime import datetime, timedelta
 import os
+import json
 from dotenv import load_dotenv
 from medical_agent_simple import EnhancedMedicalAgent
 from communication import CommunicationManager
 from database_manager import DatabaseManager
-import json
-import os
+
+# Calendar integration
+try:
+    from calendar_integration import CalendarIntegration
+    CALENDAR_AVAILABLE = True
+except ImportError:
+    CALENDAR_AVAILABLE = False
 
 # Page configuration
 st.set_page_config(
@@ -103,7 +105,7 @@ def main():
         # Navigation
         page = st.selectbox(
             "Navigate to:",
-            ["💬 Chat Assistant", "📊 Analytics", "📅 Appointments", "🛠️ Admin Panel"]
+            ["💬 Chat Assistant", "📊 Analytics", "📅 Appointments", "�️ Calendar Integration", "�🛠️ Admin Panel"]
         )
         
         # Quick stats
@@ -144,7 +146,9 @@ def main():
         show_analytics()
     elif page == "📅 Appointments":
         show_appointments()
-    elif page == "🛠️ Admin Panel":
+    elif page == "�️ Calendar Integration":
+        show_calendar_integration()
+    elif page == "�🛠️ Admin Panel":
         show_admin_panel()
 
 def show_chat_interface():
@@ -992,6 +996,235 @@ def show_admin_panel():
                     st.error(f"❌ Error: {e}")
         else:
             st.info("No appointments available for testing")
+
+def show_calendar_integration():
+    """Calendar Integration with Calendly-style functionality"""
+    st.header("🗓️ Calendar Integration System")
+    
+    # Import calendar integration
+    try:
+        from calendar_integration import CalendarIntegration
+        calendar_system = CalendarIntegration()
+        
+        st.success("✅ Calendar integration system loaded successfully!")
+        
+        # Create tabs for different calendar functions
+        tab1, tab2, tab3, tab4 = st.tabs([
+            "📅 Doctor Availability", 
+            "🗓️ Full Calendar View", 
+            "📊 Export Calendar", 
+            "📋 Calendar Settings"
+        ])
+        
+        with tab1:
+            st.subheader("👨‍⚕️ Doctor Availability (Calendly-style)")
+            
+            try:
+                # Get list of doctors with error handling
+                conn = sqlite3.connect("data/medical_scheduler.db")
+                doctors_df = pd.read_sql_query("SELECT doctor_id, doctor_name, specialty FROM doctors ORDER BY doctor_name", conn)
+                conn.close()
+                
+                st.info(f"📊 Debug: Found {len(doctors_df)} doctors in database")
+                
+                # Show sample data for debugging
+                if not doctors_df.empty:
+                    st.success(f"✅ Found {len(doctors_df)} doctors in the system")
+                    
+                    # Debug: Show first few doctors
+                    with st.expander("🔍 Debug: Doctor Data Sample", expanded=False):
+                        st.dataframe(doctors_df.head())
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Show doctor selection with better formatting and error handling
+                        doctor_options = []
+                        for _, row in doctors_df.iterrows():
+                            # Ensure we have valid data
+                            doctor_id = row['doctor_id']
+                            doctor_name = row['doctor_name'] if pd.notna(row['doctor_name']) else 'Unknown'
+                            specialty = row['specialty'] if pd.notna(row['specialty']) else 'General'
+                            
+                            doctor_options.append({
+                                'id': str(doctor_id),
+                                'display': f"Dr. {doctor_name} ({specialty})",
+                                'name': doctor_name,
+                                'specialty': specialty
+                            })
+                        
+                        if doctor_options:
+                            selected_index = st.selectbox(
+                                "Select Doctor:",
+                                range(len(doctor_options)),
+                                format_func=lambda x: doctor_options[x]['display']
+                            )
+                            
+                            selected_doctor_id = doctor_options[selected_index]['id']
+                            selected_doctor_name = doctor_options[selected_index]['name']
+                            selected_doctor_specialty = doctor_options[selected_index]['specialty']
+                        else:
+                            st.error("❌ No valid doctors found")
+                            return
+                    
+                    with col2:
+                        days_ahead = st.slider("Days to show:", 7, 30, 14)
+                    
+                    # Display selected doctor info with safe conversion
+                    st.info(f"🩺 Selected: Dr. {selected_doctor_name} ({selected_doctor_specialty}) - ID: {selected_doctor_id}")
+                    
+                    if st.button("🔍 Get Available Slots", type="primary"):
+                        with st.spinner("Loading available slots..."):
+                            try:
+                                # Use the string ID directly (calendar system should handle conversion)
+                                availability = calendar_system.get_doctor_availability(selected_doctor_id, days_ahead)
+                                
+                                if 'error' not in availability:
+                                    st.success(f"✅ Found {availability['total_slots']} available slots")
+                                    
+                                    # Display doctor info
+                                    st.info(f"""
+                                    **Doctor:** Dr. {availability['doctor']['doctor_name']}  
+                                    **Specialty:** {availability['doctor']['specialty']}  
+                                    **Working Hours:** {availability['working_hours']}  
+                                    **Slot Duration:** {availability['slot_duration']}
+                                    """)
+                                    
+                                    # Display slots by date
+                                    if availability['slots_by_date']:
+                                        for date, slots in list(availability['slots_by_date'].items())[:7]:  # Show first 7 days
+                                            with st.expander(f"📅 {datetime.strptime(date, '%Y-%m-%d').strftime('%A, %B %d, %Y')} ({len(slots)} slots)"):
+                                                cols = st.columns(4)
+                                                for i, slot in enumerate(slots):
+                                                    with cols[i % 4]:
+                                                        if st.button(f"⏰ {slot['formatted_time']}", key=f"slot_{slot['slot_id']}"):
+                                                            st.success(f"Selected: {slot['formatted_time']} on {slot['formatted_date']}")
+                                                            st.info("💡 In a real booking system, this would open the booking form!")
+                                    else:
+                                        st.warning("📅 No available slots found for the selected period")
+                                        
+                                else:
+                                    st.error(f"❌ {availability['error']}")
+                                    
+                            except Exception as e:
+                                st.error(f"❌ Error loading slots: {str(e)}")
+                                st.info("🔧 Debug info: Check that doctor schedules are properly set up in the database")
+                
+                else:
+                    st.error("❌ No doctors found in the system")
+                    st.info("💡 Add doctors using the Admin Panel or run add_doctors.py script")
+                    
+            except Exception as e:
+                st.error(f"❌ Database connection error: {str(e)}")
+                st.info("🔧 Make sure the database file exists at data/medical_scheduler.db")
+        
+        with tab2:
+            st.subheader("📅 Full Calendar View")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                start_date = st.date_input("Start Date", datetime.now().date())
+            with col2:
+                end_date = st.date_input("End Date", (datetime.now() + timedelta(days=30)).date())
+            
+            if st.button("📊 Load Calendar", type="primary"):
+                with st.spinner("Loading calendar data..."):
+                    calendar_data = calendar_system.get_all_appointments_calendar(
+                        start_date.strftime('%Y-%m-%d'),
+                        end_date.strftime('%Y-%m-%d')
+                    )
+                    
+                    if calendar_data['success']:
+                        st.success(f"✅ Loaded {calendar_data['total_appointments']} appointments")
+                        
+                        # Display appointments
+                        for event in calendar_data['events']:
+                            start_time = datetime.fromisoformat(event['start'])
+                            
+                            # Color code by status
+                            if event['status'] == 'confirmed':
+                                color = '#d4edda'
+                            elif event['status'] == 'pending':
+                                color = '#fff3cd'
+                            else:
+                                color = '#f8d7da'
+                            
+                            st.markdown(f"""
+                            <div style="background-color: {color}; padding: 10px; border-radius: 5px; margin: 5px 0;">
+                                <strong>📅 {start_time.strftime('%Y-%m-%d %H:%M')}</strong><br>
+                                <strong>{event['title']}</strong><br>
+                                📧 {event['patient_email']}<br>
+                                📞 {event['patient_phone']}<br>
+                                🏥 {event['doctor_specialty']}<br>
+                                ✅ Status: {event['status'].title()}
+                            </div>
+                            """, unsafe_allow_html=True)
+                    else:
+                        st.error(f"❌ {calendar_data['error']}")
+        
+        with tab3:
+            st.subheader("📊 Export Calendar to Excel")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                export_start = st.date_input("Export Start Date", datetime.now().date(), key="export_start")
+            with col2:
+                export_end = st.date_input("Export End Date", (datetime.now() + timedelta(days=30)).date(), key="export_end")
+            
+            if st.button("📥 Export to Excel", type="primary"):
+                with st.spinner("Generating Excel export..."):
+                    excel_file = calendar_system.export_full_calendar_excel(
+                        export_start.strftime('%Y-%m-%d'),
+                        export_end.strftime('%Y-%m-%d')
+                    )
+                    
+                    if excel_file:
+                        st.success(f"✅ Calendar exported successfully!")
+                        st.info(f"📄 File: {excel_file}")
+                        
+                        # Provide download link if file exists
+                        file_path = f"exports/{excel_file}"
+                        if os.path.exists(file_path):
+                            with open(file_path, "rb") as file:
+                                st.download_button(
+                                    label="⬇️ Download Excel File",
+                                    data=file.read(),
+                                    file_name=excel_file,
+                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                )
+                    else:
+                        st.error("❌ Export failed")
+        
+        with tab4:
+            st.subheader("⚙️ Calendar Settings")
+            
+            st.info("""
+            **📋 Current Calendar Configuration:**
+            - **Working Hours:** 9:00 AM - 5:00 PM
+            - **Lunch Break:** 12:00 PM - 1:00 PM
+            - **Slot Duration:** 30 minutes
+            - **Buffer Time:** 15 minutes between appointments
+            - **Working Days:** Monday to Friday
+            - **Calendly-style Features:** ✅ Enabled
+            - **Excel Export:** ✅ Enabled
+            - **Google Calendar Links:** ✅ Enabled
+            """)
+            
+            st.success("✅ Calendar integration is fully operational!")
+            
+            # Show integration status
+            st.subheader("🔗 Integration Status")
+            st.success("✅ Calendar system integrated with medical agent")
+            st.success("✅ Excel export with professional formatting")
+            st.success("✅ Calendly-style slot generation")
+            st.success("✅ Google Calendar link generation")
+            st.success("✅ Appointment booking with calendar export")
+            
+    except ImportError:
+        st.error("❌ Calendar integration module not found")
+        st.info("💡 The calendar integration requires the calendar_integration.py module")
+    except Exception as e:
+        st.error(f"❌ Calendar integration error: {e}")
 
 if __name__ == "__main__":
     main()

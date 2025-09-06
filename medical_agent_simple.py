@@ -15,6 +15,14 @@ import google.generativeai as genai
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema import HumanMessage, SystemMessage
 
+# Calendar Integration import
+try:
+    from calendar_integration import CalendarIntegration
+    CALENDAR_AVAILABLE = True
+except ImportError:
+    CALENDAR_AVAILABLE = False
+    print("⚠️  Calendar integration not available")
+
 class EnhancedMedicalAgent:
     def __init__(self):
         self.db_path = "data/medical_scheduler.db"
@@ -66,6 +74,14 @@ class EnhancedMedicalAgent:
             ]
         }
         
+        # Initialize Calendar Integration
+        if CALENDAR_AVAILABLE:
+            self.calendar_system = CalendarIntegration()
+            print("✅ Calendar integration initialized")
+        else:
+            self.calendar_system = None
+            print("⚠️  Calendar integration disabled")
+        
     def get_db_connection(self):
         return sqlite3.connect(self.db_path)
         
@@ -97,7 +113,48 @@ class EnhancedMedicalAgent:
         return df
     
     def get_available_slots(self, doctor_id: str, date: str = None):
-        """Get available appointment slots for a specific doctor and date"""
+        """Get available appointment slots for a specific doctor and date with calendar integration"""
+        
+        # Use calendar integration if available
+        if self.calendar_system:
+            try:
+                if date:
+                    # Get slots for specific date
+                    slots = self.calendar_system.generate_available_slots(doctor_id, date, 1)
+                    # Convert to DataFrame format for compatibility
+                    slots_data = []
+                    for slot in slots:
+                        slots_data.append({
+                            'doctor_id': doctor_id,
+                            'date': slot['date'],
+                            'time': slot['time'],
+                            'is_available': 1,
+                            'slot_id': slot['slot_id'],
+                            'formatted_time': slot['formatted_time'],
+                            'day_name': slot['day_name']
+                        })
+                    return pd.DataFrame(slots_data)
+                else:
+                    # Get slots for next 14 days
+                    start_date = datetime.now().strftime('%Y-%m-%d')
+                    slots = self.calendar_system.generate_available_slots(doctor_id, start_date, 14)
+                    # Convert to DataFrame format for compatibility
+                    slots_data = []
+                    for slot in slots[:20]:  # Limit to 20 slots
+                        slots_data.append({
+                            'doctor_id': doctor_id,
+                            'date': slot['date'],
+                            'time': slot['time'],
+                            'is_available': 1,
+                            'slot_id': slot['slot_id'],
+                            'formatted_time': slot['formatted_time'],
+                            'day_name': slot['day_name']
+                        })
+                    return pd.DataFrame(slots_data)
+            except Exception as e:
+                print(f"Calendar integration error: {e}, falling back to database")
+        
+        # Fallback to original database method
         conn = self.get_db_connection()
         
         if date:
@@ -268,7 +325,7 @@ class EnhancedMedicalAgent:
             return "I apologize, but I'm having trouble processing your request. Could you please try again?"
     
     def book_appointment_slot(self, patient_id: str, doctor_id: str, date: str, time: str, is_new_patient: bool = True):
-        """Book an appointment slot for a patient"""
+        """Book an appointment slot for a patient with calendar integration"""
         conn = self.get_db_connection()
         cursor = conn.cursor()
         
@@ -286,7 +343,7 @@ class EnhancedMedicalAgent:
             
             appointment_id = cursor.lastrowid
             
-            # Mark slot as unavailable
+            # Mark slot as unavailable in database
             cursor.execute("""
                 UPDATE doctor_schedules 
                 SET is_available = 0, appointment_type = 'Booked' 
@@ -294,6 +351,34 @@ class EnhancedMedicalAgent:
             """, (doctor_id, date, time))
             
             conn.commit()
+            
+            # 🗓️ CALENDAR INTEGRATION: Export to Excel with calendar formatting
+            if self.calendar_system:
+                try:
+                    slot_data = {
+                        'patient_id': patient_id,
+                        'doctor_id': doctor_id,
+                        'date': date,
+                        'time': time,
+                        'duration': duration,
+                        'appointment_type': appointment_type
+                    }
+                    
+                    # Create calendar entry and export to Excel
+                    calendar_result = self.calendar_system.book_calendly_slot(slot_data)
+                    
+                    if calendar_result.get('success'):
+                        print(f"✅ Calendar integration successful: {calendar_result['excel_export']}")
+                        # Store calendar info in conversation context for later use
+                        if hasattr(self, 'conversation_context'):
+                            self.conversation_context['calendar_export'] = calendar_result['excel_export']
+                            self.conversation_context['calendar_link'] = calendar_result.get('calendar_link')
+                    else:
+                        print(f"⚠️  Calendar integration failed: {calendar_result.get('error')}")
+                        
+                except Exception as e:
+                    print(f"⚠️  Calendar integration error: {e}")
+            
             return appointment_id, duration
             
         except Exception as e:
